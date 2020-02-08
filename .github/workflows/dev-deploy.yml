@@ -1,0 +1,40 @@
+name: CI
+
+on: 
+  push:
+    branches: 
+      - master
+
+jobs:
+  build:
+    name: '[Dev] Deploy Pipeline'
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Run a one-line script
+      uses: actions/checkout@v2
+    - name: 'Setup Node version'
+      uses: actions/setup-node@v1
+      with:
+        node-version: '10.19.0'
+    - name: 'Install yarn'
+      run: |
+        npm install yarn@1
+    - name: 'Install dependencies'
+      run: yarn
+    - name: 'Build dev'
+      run: yarn build
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_SECRET }}
+        aws-region: us-east-1
+    - name: Deploy to S3
+      env:
+        ARTIFACT: dist
+        S3_BUCKET: ip-authorizer-portal
+      run: |
+        aws s3 sync $ARTIFACT s3://$S3_BUCKET/ --exclued 'index.html' --exclude 'report.html' --delete
+        aws s3 cp $ARTIFACT/index.html s3://$S3_BUCKET/index.html --cache-control max-age=300,s-maxage=60
