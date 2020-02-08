@@ -36,5 +36,5 @@ jobs:
         ARTIFACT: dist
         S3_BUCKET: ip-authorizer-portal
       run: |
-        aws s3 sync $ARTIFACT s3://$S3_BUCKET/ --exclued 'index.html' --exclude 'report.html' --delete
+        aws s3 sync $ARTIFACT s3://$S3_BUCKET/ --exclude 'index.html' --exclude 'report.html' --delete
         aws s3 cp $ARTIFACT/index.html s3://$S3_BUCKET/index.html --cache-control max-age=300,s-maxage=60
